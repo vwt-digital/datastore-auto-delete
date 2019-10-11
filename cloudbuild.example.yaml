@@ -29,7 +29,14 @@ steps:
   entrypoint: 'bash'
   args:
   - '-c'
-  - 'gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job || exit 0'
+  - |
+    is_existing=$(gcloud alpha scheduler jobs list | grep -Po '${PROJECT_ID}-datastore-autodelete-func')
+    if [ "$is_existing" ]
+    then
+      gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
+    else
+      echo "Job does not yet exist"
+    fi
 
 # (Re)create auto-delete scheduled job
 - name: 'gcr.io/cloud-builders/gcloud'
