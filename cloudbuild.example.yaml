@@ -28,7 +28,7 @@ steps:
   args:
   - '-c'
   - |
-    ! gcloud alpha scheduler jobs describe ${PROJECT_ID}-datastore-autodelete-job | gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
+    ! gcloud alpha scheduler jobs describe ${PROJECT_ID}-datastore-autodelete-job || gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
 
 # (Re)create auto-delete scheduled job
 - name: 'gcr.io/cloud-builders/gcloud'
