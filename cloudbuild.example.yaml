@@ -11,9 +11,7 @@ steps:
   - '--trigger-http'
   - '--project=${PROJECT_ID}'
   - '--region=europe-west1'
-  - '--set-env-vars'
-  - 'PUBSUB_VERIFICATION_TOKEN=12345qwer'
-  dir: 'datastore_autodelete_func'
+  dir: 'functions/datastore_autodelete_func'
 
 # Protect auto-delete function
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -30,13 +28,7 @@ steps:
   args:
   - '-c'
   - |
-    is_existing=$(gcloud alpha scheduler jobs list | grep -Po '${PROJECT_ID}-datastore-autodelete-job')
-    if [ "$is_existing" ]
-    then
-      gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
-    else
-      echo "Job does not yet exist"
-    fi
+    ! gcloud alpha scheduler jobs describe ${PROJECT_ID}-datastore-autodelete-job | gcloud scheduler jobs delete ${PROJECT_ID}-datastore-autodelete-job
 
 # (Re)create auto-delete scheduled job
 - name: 'gcr.io/cloud-builders/gcloud'
