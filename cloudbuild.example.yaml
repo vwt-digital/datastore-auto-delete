@@ -30,7 +30,7 @@ steps:
   args:
   - '-c'
   - |
-    is_existing=$(gcloud alpha scheduler jobs list | grep -Po '${PROJECT_ID}-datastore-autodelete-func')
+    is_existing=$(gcloud alpha scheduler jobs list | grep -Po '${PROJECT_ID}-datastore-autodelete-job')
     if [ "$is_existing" ]
     then
       gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
