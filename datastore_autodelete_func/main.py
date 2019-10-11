@@ -2,11 +2,11 @@ from google.cloud import datastore
 import logging
 import datetime
 
-def process_approve(request):
-    if request.args
-        and 'kind' in request.args
-        and 'field' in request.args
-        and 'interval' in request.args:
+def auto_delete(request):
+    if request.args and \
+        'kind' in request.args and \
+        'field' in request.args and \
+        'interval' in request.args:
 
         db_client = datastore.Client()
         query = db_client.query(kind=request.args['kind'])

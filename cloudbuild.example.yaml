@@ -6,7 +6,7 @@ steps:
   - 'functions'
   - 'deploy'
   - '${PROJECT_ID}-datastore-autodelete-func'
-  - '--entry-point=process_approve'
+  - '--entry-point=auto_delete'
   - '--runtime=python37'
   - '--trigger-http'
   - '--project=${PROJECT_ID}'
