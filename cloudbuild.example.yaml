@@ -1,0 +1,45 @@
+timeout: 1800s
+steps:
+# Deploy auto-delete function
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'functions'
+  - 'deploy'
+  - '${PROJECT_ID}-datastore-autodelete-func'
+  - '--entry-point=auto_delete'
+  - '--runtime=python37'
+  - '--trigger-http'
+  - '--project=${PROJECT_ID}'
+  - '--region=europe-west1'
+  dir: 'functions/datastore_autodelete_func'
+
+# Protect auto-delete function
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    echo '{ "bindings": [ { "members": [ "serviceAccount:${PROJECT_ID}@appspot.gserviceaccount.com" ], "role": "roles/cloudfunctions.invoker" } ] }' > approve_func_permissions.json
+    gcloud beta functions set-iam-policy ${PROJECT_ID}-datastore-autodelete-func --region=europe-west1 --project=${PROJECT_ID} approve_func_permissions.json
+
+# Delete auto-delete scheduled job to allow recreation
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    ! gcloud alpha scheduler jobs describe ${PROJECT_ID}-datastore-autodelete-job || gcloud scheduler jobs delete --quiet ${PROJECT_ID}-datastore-autodelete-job
+
+# (Re)create auto-delete scheduled job
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    source config/${PROJECT_ID}/create_datastore_autodelete_func.config.sh
+    gcloud scheduler jobs create http ${PROJECT_ID}-datastore-autodelete-job \
+    --schedule="0 7 * * *" \
+    --uri="https://europe-west1-${PROJECT_ID}.cloudfunctions.net/${PROJECT_ID}-datastore-autodelete-func?kind=$${_ENTITY_KIND}&field=$${_ENTITY_FIELD}&interval=$${_ENTITY_INTERVAL}" \
+    --project="${PROJECT_ID}" \
+    --oidc-service-account-email="${PROJECT_ID}@appspot.gserviceaccount.com" \
+    --oidc-token-audience="https://europe-west1-${PROJECT_ID}.cloudfunctions.net/${PROJECT_ID}-datastore-autodelete-func"
