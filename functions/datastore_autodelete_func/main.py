@@ -23,11 +23,13 @@ def auto_delete(request):
         entities = query.fetch()
 
         batch.begin()
+        batch_count = 0
         for entity in entities:
-            print(f"Deleting entity {entity.key.id_or_name}")
+            batch_count += 1
             batch.delete(entity.key)
 
         batch.commit()
+        print(f"Deleted {batch_count} entities")
     else:
         problem = {"type": "MissingParameters",
                    "title": """Expected kind, days interval and field for \
