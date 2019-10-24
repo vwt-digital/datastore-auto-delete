@@ -22,14 +22,26 @@ def auto_delete(request):
         query.keys_only()
         entities = query.fetch()
 
-        batch.begin()
-        batch_count = 0
-        for entity in entities:
-            batch_count += 1
-            batch.delete(entity.key)
+        if entities:
+            batch.begin()
+            batch_count = 0
+            batch_count_total = 0
 
-        batch.commit()
-        print(f"Deleted {batch_count} entities")
+            for entity in entities:
+                if batch_count == 500:
+                    batch.commit()
+                    batch = db_client.batch()
+                    batch.begin()
+                    batch_count = 0
+
+                batch.delete(entity.key)
+                batch_count += 1
+                batch_count_total += 1
+
+            batch.commit()
+            return make_response(f"Deleted total of {batch_count_total}"
+                                 f" entities", 200)
+        return make_response('No entities found', 204)
     else:
         problem = {"type": "MissingParameters",
                    "title": """Expected kind, days interval and field for \
