@@ -1,4 +1,6 @@
-# datastore-auto-delete
+# datastore-auto-delete [archived]
+
+**The datastore-auto-delete repository has been archived on 17-12-2020**
 
 Function to auto-delete datastore entities based on a kind, field id and interval.
 
